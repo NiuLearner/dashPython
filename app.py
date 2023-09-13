@@ -9,7 +9,8 @@ data_url = (
     "https://raw.githubusercontent.com/NiuLearner/dashPython/main/Stocks.csv"
 )
 df_all = pd.read_csv(data_url)
-
+# initial Dash
+app = dash.Dash(__name__)
 server = app.server
 # figures
 fig_price = px.line(df_all, x='Date', y='Close',
@@ -19,8 +20,7 @@ fig_volume = px.bar(df_all, x='Date', y='Volume',
 fig_stock_share = px.pie(df_all.groupby('Ticker').agg({'Close': 'mean'}).reset_index(
 ), values='Close', names='Ticker', title='Market Share by Stock')
 
-# initial Dash
-app = dash.Dash(__name__)
+
 
 # Dash outlayer
 app.layout = html.Div([
