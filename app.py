@@ -5,7 +5,6 @@ from dash.dependencies import Input, Output
 import plotly.express as px
 import pandas as pd
 
-app = dash.Dash(__name__)
 data_url = (
     "https://raw.githubusercontent.com/NiuLearner/dashPython/main/Stocks.csv"
 )
