@@ -16,39 +16,56 @@ server = app.server
 app.layout = html.Div([
     html.H1("Financial Dashboard"),
     
-
     html.Label("Select Stock Tickers:"),
-    dcc.Dropdown(
-        id='ticker_dropdown',
+    dcc.Checklist(
+        id='ticker_checklist',
         options=[{'label': i, 'value': i} for i in available_tickers],
-        value=available_tickers, 
-        multi=True  
+        value=available_tickers,  
     ),
     
-    dcc.Graph(id='price_graph'),
-    dcc.Graph(id='volume_graph'),
-    dcc.Graph(id='stock_share_graph')
+    dcc.Tabs(id='tabs', value='tab-1', children=[
+        dcc.Tab(label='Stock Price', value='tab-1'),
+        dcc.Tab(label='Stock Volume', value='tab-2'),
+        dcc.Tab(label='Market Share', value='tab-3'),
+    ]),
+    html.Div(id='tabs-content')
 ])
 
 @app.callback(
-    [Output('price_graph', 'figure'),
-     Output('volume_graph', 'figure'),
-     Output('stock_share_graph', 'figure')],
-    [Input('ticker_dropdown', 'value')]
+    Output('tabs-content', 'children'),
+    [Input('tabs', 'value'),
+     Input('ticker_checklist', 'value')]
 )
-def update_graph(selected_tickers):
+def update_tab(tab, selected_tickers):
     filtered_df = df_all[df_all['Ticker'].isin(selected_tickers)]
     
-    fig_price = px.line(filtered_df, x='Date', y='Close',
-                        color='Ticker', title='Stock Price Over Time')
-    
-    fig_volume = px.bar(filtered_df, x='Date', y='Volume',
-                        color='Ticker', title='Stock Volume Over Time')
-    
-    fig_stock_share = px.pie(filtered_df.groupby('Ticker').agg({'Close': 'mean'}).reset_index(),
-                             values='Close', names='Ticker', title='Market Share by Stock')
-    
-    return fig_price, fig_volume, fig_stock_share
+    if tab == 'tab-1':
+        return html.Div([
+            dcc.Graph(
+                figure=px.line(
+                    filtered_df, x='Date', y='Close',
+                    color='Ticker', title='Stock Price Over Time'
+                )
+            )
+        ])
+    elif tab == 'tab-2':
+        return html.Div([
+            dcc.Graph(
+                figure=px.bar(
+                    filtered_df, x='Date', y='Volume',
+                    color='Ticker', title='Stock Volume Over Time'
+                )
+            )
+        ])
+    elif tab == 'tab-3':
+        return html.Div([
+            dcc.Graph(
+                figure=px.pie(
+                    filtered_df.groupby('Ticker').agg({'Close': 'mean'}).reset_index(),
+                    values='Close', names='Ticker', title='Market Share by Stock'
+                )
+            )
+        ])
 
 if __name__ == '__main__':
     app.run_server(debug=True)
